@@ -26,7 +26,8 @@ class SpaceX{
             });
         }
         return geoJSON;
-    
+    }
+
     launches(){
         return fetch(`${this.baseUrl}launches`)
             .then(response=>response.json())
