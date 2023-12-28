@@ -87,6 +87,7 @@ function drawMap(){
         .center([0,20])
         .translate([width / 2 - margin.left, height / 2]);
     svg.append("g")
+        .attr("name", "map")
         .selectAll("path")
         .data(Geo.features)
         .enter()
@@ -96,9 +97,22 @@ function drawMap(){
             .projection(projection)
         )
         .attr("fill", function (d) {
-            return colorScale(0);
+            return 0;
         })
-        .style("opacity", .7)
+        .style("opacity", 1);
+    svg.append("g")
+        .attr("name", "launchPads")
+        .selectAll('.launchPads')
+		.data(launchPads.features)
+		.enter()
+		.append('path')
+        .attr('id', function(lp){
+            return lp.properties.id;
+        })
+		.attr('d', d3.geoPath()
+            .projection(projection)
+            .pointRadius(5))
+		.attr('class', 'launchPads');
 
         // OKleg: 
 
@@ -148,6 +162,22 @@ function drawMap(){
           });
 }
 
+function changeColor(event){
+    const launchPads = d3.select('#map')
+        .select("svg")
+        .select("g[name='launchPads']");
+    const selectedPadCoords = launchPads.select(`path[id='${event.currentTarget.launchPadId}']`).data()[0].geometry.coordinates;
+    launchPads.selectAll("path")
+        .attr("class", function(lp) {
+            if (lp.properties.id == event.currentTarget.launchPadId)
+                return "selectedLaunchPad";
+            const sqrDistance = (lp.geometry.coordinates[0] - selectedPadCoords[0]) * (lp.geometry.coordinates[0] - selectedPadCoords[0])
+             + (lp.geometry.coordinates[1] - selectedPadCoords[1]) * (lp.geometry.coordinates[1] - selectedPadCoords[1]);
+            if (sqrDistance < 0.1)
+                return "transparentLaunchPads";
+            return "launchPads";
+        });
+}
 
 function drawLaunchpad(){
  var data = {
